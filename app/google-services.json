@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "920276614118",
+    "project_id": "coinary-c9aeb",
+    "storage_bucket": "coinary-c9aeb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:920276614118:android:9a83b3dc79d438aae83427",
+        "android_client_info": {
+          "package_name": "com.example.coinary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "920276614118-2f48o0bds2jqjp64srufe5rtl2fq3he2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.coinary",
+            "certificate_hash": "3faf0e93234b48c1017e53740db77138531e18ab"
+          }
+        },
+        {
+          "client_id": "920276614118-f3i355t2uhj8im2q6heor58q7a6hjhao.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1qW0m9sIjb1mr0umQm1SBw8Sl9nZq3qc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "920276614118-f3i355t2uhj8im2q6heor58q7a6hjhao.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
