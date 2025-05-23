@@ -4,8 +4,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,15 +17,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 
 
 val ZenDots = FontFamily(Font(R.font.zen_dots))
+val InterFont = FontFamily(Font(R.font.inter))
 
 @Composable
 fun GoogleLoginScreen(
@@ -60,83 +67,193 @@ fun GoogleLoginScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Parte superior amarilla con logo y texto
-            Box(
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(Color.White)
+    ) {
+        // Parte superior con logo y fondo amarillo
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .clip(RoundedCornerShape(bottomEnd = 60.dp))
+                .background(Color(0xFFF2E423))
+        ) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.5f) // Menos de la mitad
-                    .clip(RoundedCornerShape(bottomEnd = 90.dp)) // Curvatura solo en la esquina inferior derecha
-                    .background(Color(0xFFFFF89D)) // Amarillo claro
+                    .fillMaxSize()
+                    .padding(top = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_logo_coinary),
+                    contentDescription = "Logo Coinary",
+                    modifier = Modifier.size(170.dp),
+                    tint = Color.Unspecified
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Welcome to Coinary",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = ZenDots,
+                    color = Color(0xFF150F33),
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+            }
+        }
+
+        // Título Login
+        Text(
+            text = "Login",
+            fontFamily = InterFont,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 22.sp,
+            color = Color(0xFF150F33),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 30.dp, top = 40.dp, bottom = 16.dp),
+            textAlign = TextAlign.Left
+        )
+
+        // Email y contraseña
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextField(
+                value = email,
+                onValueChange = { email = it },
+                label = {
+                    Text("Email Address", fontFamily = InterFont, color = Color(0xFF868686))
+                },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(vertical = 10.dp, horizontal = 10.dp)
+                    .background(Color.White)
+                    .border(1.dp, color = Color(0xFF150F33), RoundedCornerShape(10.dp)),
+                textStyle = TextStyle(
+                    fontFamily = InterFont,
+                    color = Color(0xFF150F33), // <--- color del texto dentro del campo
+                    fontSize = 16.sp
+                ),
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                )
+            )
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                label = {
+                    Text("Password", fontFamily = InterFont, color = Color(0xFF868686))
+                },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(vertical = 10.dp, horizontal = 10.dp)
+                    .background(Color.White)
+                    .border(1.dp, color = Color(0xFF150F33), RoundedCornerShape(10.dp)),
+                textStyle = TextStyle(
+                    fontFamily = InterFont,
+                    color = Color(0xFF150F33), // <--- color del texto dentro del campo
+                )
+                ,
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                )
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            } else {
+                Button(
+                    onClick = {
+                        // Aquí la acción del botón Continue
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2E423)),
+                    shape = RoundedCornerShape(20.dp),
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 60.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
+                        .fillMaxWidth(0.9f)
+                        .height(50.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_logo_coinary),
-                        contentDescription = "Logo Coinary",
-                        modifier = Modifier.size(170.dp),
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "Welcome to Coinary",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Normal,
-                        fontFamily = ZenDots,
+                        text = "Continue",
                         color = Color(0xFF150F33),
-                        modifier = Modifier.padding(bottom = 32.dp)
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        fontFamily = InterFont
                     )
                 }
             }
+        }
 
-            // Parte inferior blanca con botón
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.6f)
-                    .padding(16.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                } else {
-                    Button(
-                        onClick = {
-                            isLoading = true
-                            launcher.launch(googleAuthClient.getSignInIntent())
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4D54BF)),
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
+
+        // Botón de Google
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            } else {
+                Button(
+                    onClick = {
+                        isLoading = true
+                        launcher.launch(googleAuthClient.getSignInIntent())
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF757569)),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(50.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Continue with Google",
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 17.sp,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_google),
-                                contentDescription = "Google Icon",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart), // Icono a la izquierda
-                                tint = Color.Unspecified
-                            )
-                        }
+                        Text(
+                            text = "Continue with Google",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                            fontFamily = InterFont,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_google),
+                            contentDescription = "Google Icon",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .align(Alignment.CenterStart),
+                            tint = Color.Unspecified
+                        )
                     }
                 }
             }
