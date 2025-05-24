@@ -29,6 +29,7 @@ class GoogleAuthClient(private val context: Context) {
         GoogleSignIn.getClient(context, gso)
     }
 
+
     fun getSignInIntent(): Intent = googleSignInClient.signInIntent
 
     suspend fun signInWithIntent(intent: Intent): Result<FirebaseUser> {
