@@ -141,8 +141,74 @@ fun HomeScreen(onLogout: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.Black)
     ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .padding(top = -50.dp)
+                ,contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.marco_superior),
+                contentDescription = "Marco superior",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row (
+                modifier = Modifier.padding(top = 15.dp)
+            ){
+
+                Image(
+                    painter = painterResource(id = R.drawable.user_icon),
+                    contentDescription = "Foto de usuario",
+                    modifier = Modifier
+                        .size(35.dp)
+                        .clickable {
+
+                        }
+
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Column{
+                    Text(
+                        "Hello!!",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFF2E423)
+                    )
+                    Text(
+                        user?.username ?: "User",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFF2E423)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(270.dp))
+
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notification icon",
+                    tint = Color(0xFFF2E423),
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable {
+                            // Screen for user configuration (Close session, )
+                        }
+                )
+
+
+            }
+
+
+        }
+
+
+
 
         Box(
             modifier = Modifier
@@ -171,8 +237,16 @@ fun HomeScreen(onLogout: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
-                    Text("Hello!!", style = MaterialTheme.typography.labelSmall, color = Color(0xFF150F33))
-                    Text(user?.username ?: "User", fontWeight = FontWeight.Bold, color = Color(0xFF150F33))
+                    Text(
+                        "Hello!!",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF150F33)
+                    )
+                    Text(
+                        user?.username ?: "User",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF150F33)
+                    )
                 }
             }
 
@@ -205,7 +279,11 @@ fun HomeScreen(onLogout: () -> Unit) {
                     color = Color(0xFF150F33)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Total Income", style = MaterialTheme.typography.labelMedium, color = Color(0xFF150F33))
+                Text(
+                    "Total Income",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color(0xFF150F33)
+                )
                 Text(
                     "$ 1’245.567,34",
                     style = MaterialTheme.typography.bodyMedium,
