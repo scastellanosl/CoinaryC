@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -71,14 +72,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation() { 
+fun AppNavigation() {
 
-    val systemUiController = rememberSystemUiController() // Forma de pintar la barra de estado del celu
+    val systemUiController = rememberSystemUiController()
     val statusBarColor = Color(0xFF150F33)
     SideEffect {
         systemUiController.setStatusBarColor(
             color = statusBarColor,
-            darkIcons = false // Al dejar dark icons en false, las notificaciones y otros iconitos serán claros y harán contraste con el color de la barra de navegación d esta pantalla en específico
+            darkIcons = false
         )
     }
 
@@ -139,19 +140,27 @@ fun AppNavigation() {
         }
 
         composable("home") {
-            HomeScreen(
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
+            HomeScreen(navController = navController, onLogout = {
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = true }
                 }
-            )
+            })
         }
+
+
+        composable("profile") {
+            ProfileScreen()
+        }
+
+        composable("notifications") {
+            NotificationsScreen()
+        }
+
     }
 }
 
 @Composable
-fun HomeScreen(onLogout: () -> Unit) {
+fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
     val context = LocalContext.current
     val googleAuthClient = remember { GoogleAuthClient(context) }
     val coroutineScope = rememberCoroutineScope()
@@ -185,7 +194,7 @@ fun HomeScreen(onLogout: () -> Unit) {
                     modifier = Modifier
                         .size(35.dp)
                         .clickable {
-
+                            navController.navigate("profile")
                         }
 
                 )
@@ -214,8 +223,7 @@ fun HomeScreen(onLogout: () -> Unit) {
                     modifier = Modifier
                         .size(28.dp)
                         .clickable {
-                            // Screen for user configuration (Close session, )
-                        }
+                            navController.navigate("notifications")                        }
                         .padding(top = 2.dp)
                 )
 
