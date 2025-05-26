@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation(platform(libs.firebase.bom.v33130))
     implementation(libs.google.firebase.analytics)
     implementation(libs.google.firebase.auth.ktx)
