@@ -13,14 +13,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -32,21 +36,28 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.coinary.ui.theme.CoinaryTheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -60,9 +71,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview
 @Composable
 fun AppNavigation() {
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = Color(0xFF150F33)
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = statusBarColor,
+            darkIcons = false
+        )
+    }
+
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val navController = rememberNavController()
@@ -120,131 +140,465 @@ fun AppNavigation() {
         }
 
         composable("home") {
-            HomeScreen(
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
+            HomeScreen(navController = navController, onLogout = {
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = true }
                 }
-            )
+            })
         }
+
+
+        composable("profile") {
+            ProfileScreen()
+        }
+
+        composable("notifications") {
+            NotificationsScreen()
+        }
+
     }
 }
 
 @Composable
-fun HomeScreen(onLogout: () -> Unit) {
+fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
     val context = LocalContext.current
     val googleAuthClient = remember { GoogleAuthClient(context) }
     val coroutineScope = rememberCoroutineScope()
     val user = googleAuthClient.getSignedInUser()
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.Black)
     ) {
 
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomEnd = 45.dp)) // solo esquina derecha abajo redondeada
-                .background(Color(0xFFFFEB3B))
-                .padding(18.dp)
-                .padding(bottom = 60.dp)
-        )
+                .fillMaxWidth(), contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.marco_superior),
+                contentDescription = "Marco superior",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        {
-            // Greeting to the user and button for user configuration
             Row(
-                modifier = Modifier.align(Alignment.TopStart),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.padding(top = 5.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "User Icon",
-                    tint = Color(0xFF3F51B5),
+
+                Image(
+                    painter = painterResource(id = R.drawable.user_icon),
+                    contentDescription = "Foto de usuario",
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(35.dp)
                         .clickable {
-                            // Screen for user configuration (Close session, )
+                            navController.navigate("profile")
                         }
+
                 )
+
                 Spacer(modifier = Modifier.width(8.dp))
+
                 Column {
-                    Text("Hello!!", style = MaterialTheme.typography.labelSmall, color = Color(0xFF150F33))
-                    Text(user?.username ?: "User", fontWeight = FontWeight.Bold, color = Color(0xFF150F33))
+                    Text(
+                        "Hello!!",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFF2E423)
+                    )
+                    Text(
+                        user?.username ?: "User",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFF2E423)
+                    )
                 }
+
+                Spacer(modifier = Modifier.width(270.dp))
+
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notification icon",
+                    tint = Color(0xFFF2E423),
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable {
+                            navController.navigate("notifications")                        }
+                        .padding(top = 2.dp)
+                )
+
+
             }
 
-            // Notification icon
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notification",
+
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(), contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.backgroundcoinary),
+                contentDescription = "Background Coinary",
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(28.dp),
-                tint = Color.Black
+                    .padding(top = 15.dp),
+                contentScale = ContentScale.None
             )
 
             Column(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier.align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(50.dp))
+                Text(
+                    text = "Total Personal Expenses",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 40.dp)
+                )
 
                 Text(
-                    "Total Personal Expenses",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF150F33)
-                )
-                Text(
-                    "$ 245.567,55",
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = "$ 245.567,55",
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF150F33)
+                    fontSize = 26.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 15.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("Total Income", style = MaterialTheme.typography.labelMedium, color = Color(0xFF150F33))
+
                 Text(
-                    "$ 1’245.567,34",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF150F33)
+                    text = "Total income",
+                    fontWeight = FontWeight.Thin,
+                    fontSize = 12.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 3.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "$ 1’245.567,34",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = Color.White,
+                    modifier = Modifier.offset(y = (-5).dp)
+                )
+
                 Button(
                     onClick = { /* Change month action */ },
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(100.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color(0xFF150F33)
+                        containerColor = Color(0xFF4D54BF),
+                        contentColor = Color.White
                     ),
-                    border = BorderStroke(
-                        2.dp,
-                        Color(0xFF150F33)
-                    )
+                    modifier = Modifier.offset(y = (-3).dp),
+                    contentPadding = PaddingValues(horizontal = 25.dp, vertical = 3.dp)
                 ) {
-                    Text("Mes")
+                    Text(
+                        text = "Month",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
+
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    googleAuthClient.signOut()
-                    onLogout()
-                }
-            },
-            shape = RoundedCornerShape(8.dp),
+        Box(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-                .height(50.dp)
+                .offset(y = (-18).dp)
+                .padding(horizontal = 55.dp)
         ) {
-            Text(text = "Cerrar Sesión")
+
+            Image(
+                painter = painterResource(id = R.drawable.fondo_contenedor_this_week),
+                contentDescription = "Fondo contenedor this week"
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 55.dp)
+            ) {
+
+                Text(
+                    text = "Your week",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 20.sp, modifier = Modifier.padding(top = 30.dp)
+                )
+
+                Spacer(modifier = Modifier.height(15.dp))
+
+                Image(
+                    alignment = Alignment.Center,
+                    painter = painterResource(id = R.drawable.cake_graphic),
+                    contentDescription = "Cake graphic",
+                    modifier = Modifier
+                        .size(175.dp)
+                )
+
+                Text(
+                    text = "All",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Thin,
+                    color = Color.White,
+                    modifier = Modifier.offset(y = (-120).dp)
+                )
+                Text(
+                    text = "$ 245.567,55",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.offset(y = (-120).dp)
+                )
+
+            }
+
+
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(), contentAlignment = Alignment.Center
+        ) {
+
+            Image(
+                painter = painterResource(id = R.drawable.marco_inferior),
+                contentDescription = "Marco inferior",
+                modifier = Modifier.offset(y = (-10).dp),
+                contentScale = ContentScale.None
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+
+                Text(
+                    text = "Top Expenses",
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontWeight = FontWeight.Thin,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(top = 0.dp)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 35.dp), // espacio alrededor de toda la fila
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 3.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier
+                                .size(95.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.rectangle1),
+                                contentDescription = "Rectangle 1",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            Text(
+                                text = "Food",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                            Image(
+                                painter = painterResource(id = R.drawable.food_icon),
+                                contentDescription = "Food icon",
+                                modifier = Modifier
+                                    .padding(top = 26.dp)
+                                    .size(42.dp)
+                            )
+                            Text(
+                                text = "$ 102.500",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 70.dp)
+                            )
+                        }
+                    }
+
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 3.dp)
+                    ) {
+
+                        Box(
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier
+                                .size(95.dp)
+                        ) {
+
+                            Image(
+                                painter = painterResource(id = R.drawable.rectangle2),
+                                contentDescription = "Rectangle 2",
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            Text(
+                                text = "Gifts",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+
+                            Image(
+                                painter = painterResource(id = R.drawable.gift_icon),
+                                contentDescription = "Gift icon",
+                                modifier = Modifier
+                                    .padding(top = 33.dp)
+                                    .size(32.dp)
+                            )
+
+                            Text(
+                                text = "$ 78.000",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 70.dp)
+                            )
+                        }
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 3.dp)
+                    ) {
+
+                        Box(
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier
+                                .size(95.dp)
+                        ) {
+
+                            Image(
+                                painter = painterResource(id = R.drawable.rectangle3),
+                                contentDescription = "Rectangle 3",
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            Text(
+                                text = "Transport",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+
+                            Image(
+                                painter = painterResource(id = R.drawable.car_icon),
+                                contentDescription = "Car icon",
+                                modifier = Modifier
+                                    .padding(top = 28.dp)
+                                    .size(38.dp)
+                            )
+
+                            Text(
+                                text = "$ 65.123",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 70.dp)
+                            )
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(), contentAlignment = Alignment.Center
+        ) {
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(20.dp), // ajusta aquí
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.wrapContentWidth()
+
+            ) {
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.wrapContentSize()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.button_background),
+                            contentDescription = "Button background",
+                            modifier = Modifier.clickable {
+                                // Lógica
+                            }
+                        )
+
+                        Image(
+                            painter = painterResource(id = R.drawable.stats_icon),
+                            contentDescription = "Stats icon"
+                        )
+                    }
+                }
+
+                Column() {
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.wrapContentSize()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.button_background),
+                            contentDescription = "Button background",
+                            modifier = Modifier.clickable {
+                                // Lógica
+                            }
+                        )
+
+                        Image(
+                            painter = painterResource(id = R.drawable.add_icon),
+                            contentDescription = "Add icon"
+                        )
+                    }
+
+                }
+
+                Column() {
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.wrapContentSize()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.button_background),
+                            contentDescription = "Button background",
+                            modifier = Modifier.clickable {
+                                // Lógica
+                            }
+                        )
+
+                        Image(
+                            painter = painterResource(id = R.drawable.pencil_icon),
+                            contentDescription = "Pencil icon"
+                        )
+                    }
+
+                }
+
+            }
+
+        }
+
+
     }
 }
