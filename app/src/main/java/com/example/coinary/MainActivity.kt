@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,9 +45,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +63,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.common.math.LinearTransformation.horizontal
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -156,6 +162,19 @@ fun AppNavigation() {
             NotificationsScreen()
         }
 
+        composable("stats") {
+            StatsScreen()
+        }
+
+        composable("reminder") {
+            ReminderScreen()
+        }
+
+        composable("movement"){
+            MovementScreen()
+        }
+
+
     }
 }
 
@@ -185,27 +204,36 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
             )
 
             Row(
-                modifier = Modifier.padding(top = 5.dp)
+                modifier = Modifier.fillMaxWidth(0.95f),
+                horizontalArrangement = Arrangement.Center
             ) {
 
-                Image(
-                    painter = painterResource(id = R.drawable.user_icon),
-                    contentDescription = "Foto de usuario",
-                    modifier = Modifier
-                        .size(35.dp)
-                        .clickable {
-                            navController.navigate("profile")
-                        }
+                Row(
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.user_icon),
+                        contentDescription = "Foto de usuario",
+                        modifier = Modifier
+                            .fillMaxWidth(0.1f)
+                            .size(35.dp)
+                            .clickable {
+                                navController.navigate("profile")
+                            }
+                    )
+                }
 
-                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Column {
+                Column(
+                    horizontalAlignment = Alignment.Start
+                ) {
                     Text(
                         "Hello!!",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFFF2E423)
+                        color = Color(0xFFF2E423),
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                     Text(
                         user?.username ?: "User",
@@ -214,36 +242,43 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                     )
                 }
 
-                Spacer(modifier = Modifier.width(270.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
 
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notification icon",
-                    tint = Color(0xFFF2E423),
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clickable {
-                            navController.navigate("notifications")                        }
-                        .padding(top = 2.dp)
-                )
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Notification icon",
+                        tint = Color(0xFFF2E423),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable {
+                                navController.navigate("notifications")
+                            }
+                            .padding(top = 3.dp)
+                    )
 
+                }
 
             }
-
 
         }
 
         Box(
             modifier = Modifier
-                .fillMaxWidth(), contentAlignment = Alignment.Center
+                .fillMaxWidth()
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.backgroundcoinary),
-                contentDescription = "Background Coinary",
-                modifier = Modifier
-                    .padding(top = 15.dp),
-                contentScale = ContentScale.None
-            )
+
+            Box(modifier = Modifier.fillMaxWidth(0.95f)) {
+                Image(
+                    painter = painterResource(id = R.drawable.backgroundcoinary),
+                    contentDescription = "Background Coinary",
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.FillWidth
+                )
+            }
 
             Column(
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -254,7 +289,10 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
                     color = Color.White,
-                    modifier = Modifier.padding(top = 40.dp)
+                    modifier = Modifier
+                        .padding(top = 28.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
 
                 Text(
@@ -300,153 +338,202 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
 
         }
 
+        val screenHeight =
+            LocalConfiguration.current.screenHeightDp.dp //Para aplicar responsividad, conociendo las dimensiones del dispositivo
+        val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
         Box(
             modifier = Modifier
-                .offset(y = (-18).dp)
-                .padding(horizontal = 55.dp)
+                .fillMaxWidth()
+                .offset(y = (-16).dp)
         ) {
-
-            Image(
-                painter = painterResource(id = R.drawable.fondo_contenedor_this_week),
-                contentDescription = "Fondo contenedor this week"
-            )
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 55.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(screenHeight * 0.3f)
             ) {
+                // Espacio izquierdo
+                Box(modifier = Modifier.weight(0.18f))
 
-                Text(
-                    text = "Your week",
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontSize = 20.sp, modifier = Modifier.padding(top = 30.dp)
-                )
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                Image(
-                    alignment = Alignment.Center,
-                    painter = painterResource(id = R.drawable.cake_graphic),
-                    contentDescription = "Cake graphic",
+                // Contenedor principal
+                Box(
                     modifier = Modifier
-                        .size(175.dp)
-                )
+                        .weight(0.62f)
+                        .fillMaxHeight()
+                ) {
 
-                Text(
-                    text = "All",
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Thin,
-                    color = Color.White,
-                    modifier = Modifier.offset(y = (-120).dp)
-                )
-                Text(
-                    text = "$ 245.567,55",
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.offset(y = (-120).dp)
-                )
+                    Image(
+                        painter = painterResource(id = R.drawable.fondo_contenedor_this_week),
+                        contentDescription = "Fondo contenedor this week",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .scale(1.03f),
+                        contentScale = ContentScale.FillBounds
+                    )
 
+
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Your week",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            modifier = Modifier
+                                .padding(top = screenHeight * 0.015f)
+                        )
+
+                        Spacer(modifier = Modifier.height(screenHeight * 0.022f))
+
+                        // Contenedor para la imagen de pastel + texto centrado encima
+                        Box(
+                            modifier = Modifier
+                                .width(screenWidth * 0.42f)
+                                .height(screenHeight * 0.20f)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.cake_graphic),
+                                contentDescription = "Cake graphic",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "All",
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Thin,
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "$ 245.567,55",
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 18.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Porcentaje restante para rellenar la screen
+                Box(modifier = Modifier.weight(0.2f))
             }
-
-
         }
 
+        Spacer(modifier = Modifier.height(5.dp))
+
         Box(
             modifier = Modifier
-                .fillMaxWidth(), contentAlignment = Alignment.Center
+                .fillMaxWidth(0.95f)
+                .align(Alignment.CenterHorizontally)
+                .fillMaxHeight(0.68f)
         ) {
-
             Image(
                 painter = painterResource(id = R.drawable.marco_inferior),
                 contentDescription = "Marco inferior",
-                modifier = Modifier.offset(y = (-10).dp),
-                contentScale = ContentScale.None
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentScale = ContentScale.FillWidth,
+                alignment = Alignment.Center
+
             )
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.align(Alignment.TopCenter)
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-
                 Text(
                     text = "Top Expenses",
                     textAlign = TextAlign.Center,
                     color = Color.White,
                     fontWeight = FontWeight.Thin,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(top = 0.dp)
+                    fontSize = 24.sp
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 35.dp), // espacio alrededor de toda la fila
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 3.dp)
+                    // Gasto 1
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.TopCenter
                     ) {
-                        Box(
-                            contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier
-                                .size(95.dp)
+
+                        Image(
+                            painter = painterResource(id = R.drawable.rectangle1),
+                            contentDescription = "Rectangle 1",
+                            modifier = Modifier.size(100.dp)
+                        )
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.rectangle1),
-                                contentDescription = "Rectangle 1",
-                                modifier = Modifier.fillMaxSize()
-                            )
+
                             Text(
                                 text = "Food",
                                 color = Color.White,
-                                fontSize = 15.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
+
                             Image(
                                 painter = painterResource(id = R.drawable.food_icon),
                                 contentDescription = "Food icon",
                                 modifier = Modifier
-                                    .padding(top = 26.dp)
-                                    .size(42.dp)
+                                    .size(40.dp)
+                                    .padding(vertical = 4.dp)
                             )
+
                             Text(
                                 text = "$ 102.500",
                                 color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 70.dp)
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
 
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 3.dp)
+                    // Gasto 2
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.TopCenter
                     ) {
 
-                        Box(
-                            contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier
-                                .size(95.dp)
+                        Image(
+                            painter = painterResource(id = R.drawable.rectangle2),
+                            contentDescription = "Rectangle 2",
+                            modifier = Modifier.size(100.dp)
+                        )
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
 
-                            Image(
-                                painter = painterResource(id = R.drawable.rectangle2),
-                                contentDescription = "Rectangle 2",
-                                modifier = Modifier.fillMaxSize()
-                            )
 
                             Text(
                                 text = "Gifts",
                                 color = Color.White,
-                                fontSize = 15.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
@@ -455,41 +542,40 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                                 painter = painterResource(id = R.drawable.gift_icon),
                                 contentDescription = "Gift icon",
                                 modifier = Modifier
-                                    .padding(top = 33.dp)
-                                    .size(32.dp)
+                                    .size(40.dp)
+                                    .padding(vertical = 4.dp)
                             )
 
                             Text(
                                 text = "$ 78.000",
                                 color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 70.dp)
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 3.dp)
+                    // Gasto 3
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.TopCenter
                     ) {
 
-                        Box(
-                            contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier
-                                .size(95.dp)
-                        ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.rectangle3),
+                            contentDescription = "Rectangle 3",
+                            modifier = Modifier.size(100.dp)
+                        )
 
-                            Image(
-                                painter = painterResource(id = R.drawable.rectangle3),
-                                contentDescription = "Rectangle 3",
-                                modifier = Modifier.fillMaxSize()
-                            )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
 
                             Text(
                                 text = "Transport",
                                 color = Color.White,
-                                fontSize = 15.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
@@ -498,105 +584,101 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                                 painter = painterResource(id = R.drawable.car_icon),
                                 contentDescription = "Car icon",
                                 modifier = Modifier
-                                    .padding(top = 28.dp)
-                                    .size(38.dp)
+                                    .size(40.dp)
+                                    .padding(vertical = 4.dp)
                             )
 
                             Text(
                                 text = "$ 65.123",
                                 color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 70.dp)
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
-
                 }
-
             }
-
         }
+
+
 
         Box(
             modifier = Modifier
-                .fillMaxWidth(), contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(vertical = 10.dp)
+                .background(Color.Black),
+            contentAlignment = Alignment.Center
         ) {
-
             Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp), // ajusta aquí
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.wrapContentWidth()
-
+                modifier = Modifier.wrapContentWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-
+                // Botón de Estadísticas (Stats)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.wrapContentSize()
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clickable {
+                                navController.navigate("stats")
+                            }
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.button_background),
                             contentDescription = "Button background",
-                            modifier = Modifier.clickable {
-                                // Lógica
-                            }
+                            modifier = Modifier.fillMaxSize()
                         )
-
                         Image(
                             painter = painterResource(id = R.drawable.stats_icon),
-                            contentDescription = "Stats icon"
+                            contentDescription = "Stats icon",
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
 
-                Column() {
-
+                // Botón de Añadir (Add)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.wrapContentSize()
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clickable {navController.navigate("movement")}
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.button_background),
                             contentDescription = "Button background",
-                            modifier = Modifier.clickable {
-                                // Lógica
-                            }
+                            modifier = Modifier.fillMaxSize()
                         )
-
                         Image(
                             painter = painterResource(id = R.drawable.add_icon),
-                            contentDescription = "Add icon"
+                            contentDescription = "Add icon",
+                            modifier = Modifier.size(28.dp)
                         )
                     }
-
                 }
 
-                Column() {
-
+                // Botón de Editar (Pencil)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.wrapContentSize()
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clickable {navController.navigate("reminder")}
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.button_background),
                             contentDescription = "Button background",
-                            modifier = Modifier.clickable {
-                                // Lógica
-                            }
+                            modifier = Modifier.fillMaxSize()
                         )
-
                         Image(
                             painter = painterResource(id = R.drawable.pencil_icon),
-                            contentDescription = "Pencil icon"
+                            contentDescription = "Pencil icon",
+                            modifier = Modifier.size(28.dp)
                         )
                     }
-
                 }
-
             }
-
         }
 
 
