@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
+    implementation(libs.accompanist.systemuicontroller)
     implementation(platform(libs.firebase.bom.v33130))
     implementation(libs.google.firebase.analytics)
     implementation(libs.google.firebase.auth.ktx)
@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.vision.internal.vkp)
+    implementation(libs.androidx.navigation.compose.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,4 +64,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.material.icons.extended)
+
 }

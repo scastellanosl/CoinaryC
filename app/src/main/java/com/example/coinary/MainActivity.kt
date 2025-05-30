@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,13 +24,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -44,17 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -63,11 +54,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.common.math.LinearTransformation.horizontal
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_Coinary)
         super.onCreate(savedInstanceState)
         setContent {
             CoinaryTheme {
@@ -79,7 +70,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-
     val systemUiController = rememberSystemUiController()
     val statusBarColor = Color(0xFF150F33)
     SideEffect {
@@ -102,7 +92,7 @@ fun AppNavigation() {
             if (intent != null) {
                 val signInResult = googleAuthClient.signInWithIntent(intent)
                 if (signInResult.isSuccess) {
-                    navController.navigate("home") {
+                    navController.navigate("main") {
                         popUpTo("register") { inclusive = true }
                     }
                 } else {
@@ -115,12 +105,11 @@ fun AppNavigation() {
             }
         }
     }
-
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "main") {
         composable("login") {
             GoogleLoginScreen(
                 onLoginSuccess = {
-                    navController.navigate("home") {
+                    navController.navigate("main") {
                         popUpTo("login") { inclusive = true }
                     }
                 },
@@ -129,11 +118,10 @@ fun AppNavigation() {
                 }
             )
         }
-
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate("home") {
+                    navController.navigate("main") {
                         popUpTo("register") { inclusive = true }
                     }
                 },
@@ -144,36 +132,29 @@ fun AppNavigation() {
                 launcher = launcher
             )
         }
-
+        composable("main") {
+            MainScreen(rootNavController = navController)
+        }
         composable("home") {
-            HomeScreen(navController = navController, onLogout = {
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
+            HomeScreen(
+                navController = navController,
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
                 }
-            })
+            )
         }
-
-
-        composable("profile") {
-            ProfileScreen()
+        composable("movement") {
+            AddMovementScreen(
+                navController = navController,
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            )
         }
-
-        composable("notifications") {
-            NotificationsScreen()
-        }
-
-        composable("stats") {
-            StatsScreen()
-        }
-
-        composable("reminder") {
-            ReminderScreen()
-        }
-
-        composable("movement"){
-            MovementScreen()
-        }
-
 
     }
 }
@@ -287,7 +268,7 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                 Text(
                     text = "Total Personal Expenses",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp,
+                    fontSize = 26.sp,
                     color = Color.White,
                     modifier = Modifier
                         .padding(top = 28.dp)
@@ -298,7 +279,7 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                 Text(
                     text = "$ 245.567,55",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
+                    fontSize = 24.sp,
                     color = Color.White,
                     modifier = Modifier.padding(top = 15.dp)
                 )
@@ -440,11 +421,9 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
             Image(
                 painter = painterResource(id = R.drawable.marco_inferior),
                 contentDescription = "Marco inferior",
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.FillWidth,
                 alignment = Alignment.Center
-
             )
 
             Column(
@@ -462,225 +441,67 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                     fontSize = 24.sp
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(50.dp))
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 8.dp),  // menos padding para no reducir mucho espacio
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)  // separa entre cajas
                 ) {
-                    // Gasto 1
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.rectangle1),
-                            contentDescription = "Rectangle 1",
-                            modifier = Modifier.size(100.dp)
-                        )
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
+                    listOf(
+                        Triple("Food", R.drawable.rectangle1, R.drawable.food_icon) to "$ 102.500",
+                        Triple("Gifts", R.drawable.rectangle2, R.drawable.gift_icon) to "$ 78.000",
+                        Triple("Transport", R.drawable.rectangle3, R.drawable.car_icon) to "$ 65.123",
+                    ).forEach { (triple, price) ->
+                        val (label, bgRes, iconRes) = triple
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(0.85f) // para que no sean cuadrados perfectos pero sí proporcionados
+                                .padding(vertical = 4.dp),
+                            contentAlignment = Alignment.TopCenter
                         ) {
-
-                            Text(
-                                text = "Food",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-
                             Image(
-                                painter = painterResource(id = R.drawable.food_icon),
-                                contentDescription = "Food icon",
+                                painter = painterResource(id = bgRes),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                alpha = 0.9f // para no tapar el texto completamente
+                            )
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(vertical = 4.dp)
-                            )
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp)
+                            ) {
+                                Text(
+                                    text = label,
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
 
-                            Text(
-                                text = "$ 102.500",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                                Image(
+                                    painter = painterResource(id = iconRes),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .padding(vertical = 6.dp)
+                                )
 
-                    // Gasto 2
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.rectangle2),
-                            contentDescription = "Rectangle 2",
-                            modifier = Modifier.size(100.dp)
-                        )
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-
-
-                            Text(
-                                text = "Gifts",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.gift_icon),
-                                contentDescription = "Gift icon",
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(vertical = 4.dp)
-                            )
-
-                            Text(
-                                text = "$ 78.000",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    // Gasto 3
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.rectangle3),
-                            contentDescription = "Rectangle 3",
-                            modifier = Modifier.size(100.dp)
-                        )
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-
-                            Text(
-                                text = "Transport",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.car_icon),
-                                contentDescription = "Car icon",
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(vertical = 4.dp)
-                            )
-
-                            Text(
-                                text = "$ 65.123",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp)
-                .background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                modifier = Modifier.wrapContentWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Botón de Estadísticas (Stats)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clickable {
-                                navController.navigate("stats")
+                                Text(
+                                    text = price,
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.button_background),
-                            contentDescription = "Button background",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.stats_icon),
-                            contentDescription = "Stats icon",
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-
-                // Botón de Añadir (Add)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clickable {navController.navigate("movement")}
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.button_background),
-                            contentDescription = "Button background",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.add_icon),
-                            contentDescription = "Add icon",
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-
-                // Botón de Editar (Pencil)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clickable {navController.navigate("reminder")}
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.button_background),
-                            contentDescription = "Button background",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.pencil_icon),
-                            contentDescription = "Pencil icon",
-                            modifier = Modifier.size(28.dp)
-                        )
+                        }
                     }
                 }
             }
         }
-
-
     }
 }

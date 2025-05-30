@@ -9,17 +9,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun StatsScreen() {
+fun StatsScreen(navController: NavHostController){
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1B1B1B)),
+        .fillMaxSize()
+        .background(Color(0xFF1B1B1B)),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Stats Screen",
+            text = "Reminder Screen",
             color = Color.White,
             fontSize = 24.sp
         )

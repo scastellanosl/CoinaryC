@@ -9,9 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun ReminderScreen() {
+fun ReminderScreen(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxSize()

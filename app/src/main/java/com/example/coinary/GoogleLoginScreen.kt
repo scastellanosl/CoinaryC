@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
@@ -85,7 +87,7 @@ fun GoogleLoginScreen(
                     Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
                     onLoginSuccess()
                 } else {
-                    Toast.makeText(context, "Error al iniciar sesión: ${user.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error: ${user.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -98,276 +100,217 @@ fun GoogleLoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .background(Color.Black)
+            .verticalScroll(rememberScrollState())
     ) {
+        val screenWidth = maxWidth
+        val contentPadding = if (screenWidth < 600.dp) 20.dp else 40.dp
+
         Column(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxSize()
+                .padding(horizontal = contentPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Imagen collage encima del logo
             Image(
-                painter = painterResource(id = R.drawable.ic_images), // Asegúrate de tener esta imagen
+                painter = painterResource(id = R.drawable.ic_images),
                 contentDescription = "Collage Coinary",
-                modifier = Modifier
-                    .fillMaxWidth(1f),
+                modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.Crop
             )
-        }
 
-        Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Manage your plans\nwith Coinary",
-            fontFamily = InterFont,
-            fontWeight = FontWeight.Bold,
-            fontSize = 26.sp,
-            lineHeight = 30.sp,
-            color = Color.White,
-            modifier = Modifier
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
+            Text(
+                text = "Manage your plans\nwith Coinary",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Bold,
+                fontSize = if (screenWidth < 600.dp) 24.sp else 32.sp,
+                lineHeight = 30.sp,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-        // Email y password
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            TextField(
+            // Email
+            CustomTextField(
                 value = email,
-                onValueChange = { email = it },
-                label = {
-                    Text(
-                        text = "Email Address",
-                        fontFamily = InterFont,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 18.sp,
-                        color = Color(0xFF868686)
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(horizontal = 20.dp)
-                    .background(Color.Black)
-                    .border(1.dp, color = Color.White, RoundedCornerShape(12.dp)),
-                textStyle = TextStyle(
-                    fontFamily = InterFont,
-                    color = Color.White,
-                    fontSize = 16.sp
-                ),
-                shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                )
+                label = "Email Address",
+                onValueChange = { email = it }
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            TextField(
+            // Password
+            CustomTextField(
                 value = password,
+                label = "Password",
                 onValueChange = { password = it },
-                label = {
-                    Text(
-                        text = "Password",
-                        fontFamily = InterFont,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 18.sp,
-                        color = Color(0xFF868686)
-                    )
-                },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(horizontal = 20.dp)
-                    .background(Color.Black)
-                    .border(1.dp, color = Color.White, RoundedCornerShape(12.dp)),
-                textStyle = TextStyle(
-                    fontFamily = InterFont,
-                    color = Color.White,
-                ),
-                shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                )
+                isPassword = true
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            AuthButton(
+                text = "Continue",
+                loading = isLoading,
+                onClick = {
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        isLoading = true
+                        FirebaseAuth.getInstance()
+                            .signInWithEmailAndPassword(email.trim(), password.trim())
+                            .addOnCompleteListener { task ->
+                                isLoading = false
+                                if (task.isSuccessful) {
+                                    onLoginSuccess()
+                                } else {
+                                    Toast.makeText(context, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    } else {
+                        Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            AuthButton(
+                text = "Continue with Google",
+                icon = R.drawable.ic_google,
+                backgroundColor = Color(0xFF757569),
+                loading = false,
+                onClick = {
+                    launcher.launch(googleAuthClient.getSignInIntent())
+                }
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            SignUpText(onClick = onNavigateToRegister)
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            Text(
+                text = "By continuing, you agree to Coinary's Terms of\nService and Privacy Policy. You confirm that you have\nread and understood these terms.",
+                color = Color.White,
+                fontSize = 9.sp,
+                lineHeight = 12.sp,
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(20.dp))
+@Composable
+fun CustomTextField(value: String, label: String, onValueChange: (String) -> Unit, isPassword: Boolean = false) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = {
+            Text(
+                text = label,
+                fontFamily = InterFont,
+                fontSize = 16.sp,
+                color = Color(0xFF868686)
+            )
+        },
+        singleLine = true,
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Black)
+            .border(1.dp, Color.White, RoundedCornerShape(10.dp)),
+        textStyle = TextStyle(color = Color.White, fontFamily = InterFont),
+        shape = RoundedCornerShape(10.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        )
+    )
+}
 
-        var isLoadingContinue by remember { mutableStateOf(false) }
-        var isLoadingGoogle by remember { mutableStateOf(false) }
-
-// Botón Continue
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isLoadingContinue) {
-                CircularProgressIndicator(modifier = Modifier.size(48.dp))
-            } else {
-                Button(
-                    onClick = {
-                        if (email.isNotBlank() && password.isNotBlank()) {
-                            isLoadingContinue = true
-                            val auth = FirebaseAuth.getInstance()
-                            auth.signInWithEmailAndPassword(email.trim(), password.trim())
-                                .addOnCompleteListener { task ->
-                                    isLoadingContinue = false
-                                    if (task.isSuccessful) {
-                                        val user = auth.currentUser
-                                        if (user != null) {  // Sin verificación de email
-                                            Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-                                            onLoginSuccess()
-                                        } else {
-                                            Toast.makeText(context, "Error inesperado, intenta de nuevo", Toast.LENGTH_LONG).show()
-                                        }
-                                    } else {
-                                        Toast.makeText(context, "Error: ${task.exception?.localizedMessage}", Toast.LENGTH_LONG).show()
-                                    }
-                                }
-                        } else {
-                            Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4D54BF)),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .height(45.dp)
-                ) {
+@Composable
+fun AuthButton(text: String, icon: Int? = null, backgroundColor: Color = Color(0xFF4D54BF), loading: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (loading) {
+            CircularProgressIndicator(modifier = Modifier.size(36.dp), color = Color.White)
+        } else {
+            Button(
+                onClick = onClick,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "Continue",
+                        text = text,
                         color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp,
                         fontFamily = InterFont
                     )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-// Botón de Google
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isLoadingGoogle) {
-                CircularProgressIndicator(modifier = Modifier.size(48.dp))
-            } else {
-                Button(
-                    onClick = {
-                        isLoadingGoogle = true
-                        launcher.launch(googleAuthClient.getSignInIntent())
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF757569)),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .height(45.dp)
-                )
-                {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Continue with Google",
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                            fontFamily = InterFont,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                    icon?.let {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_google),
-                            contentDescription = "Google Icon",
+                            painter = painterResource(id = it),
+                            contentDescription = null,
                             modifier = Modifier
-                                .size(32.dp)
-                                .align(Alignment.CenterStart),
+                                .align(Alignment.CenterStart)
+                                .size(24.dp),
                             tint = Color.Unspecified
                         )
                     }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        val annotatedText = buildAnnotatedString {
-            append("Don't have an account? ")
-            val signUpText = "Sign Up"
-            pushStringAnnotation(tag = "SIGNUP", annotation = "signup")
-            withStyle(
-                style = SpanStyle(
-                    color = Color(0xFFF2E423),
-                    textDecoration = TextDecoration.Underline
-                )
-            ) {
-                append(signUpText)
-            }
-            pop()
-        }
-
-        ClickableText(
-            text = annotatedText,
-            modifier = Modifier
-                .fillMaxWidth(),
-            style = TextStyle(
-                color = Color.White,
-                fontSize = 16.sp,
-                fontFamily = InterFont,
-                textAlign = TextAlign.Center
-            ),
-            onClick = { offset ->
-                annotatedText.getStringAnnotations(tag = "SIGNUP", start = offset, end = offset)
-                    .firstOrNull()?.let {
-                        onNavigateToRegister()
-                    }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Text(
-            text = "By continuing, you agree to Coinary's Terms of\nService and Privacy Policy. You confirm that you have\nread and understood these terms.",
-            color = Color.White,
-            fontSize = 9.sp,
-            lineHeight = 12.sp,
-            fontFamily = InterFont,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp)
-        )
     }
 }
 
+@Composable
+fun SignUpText(onClick: () -> Unit) {
+    val annotatedText = buildAnnotatedString {
+        append("Don't have an account? ")
+        pushStringAnnotation(tag = "SIGNUP", annotation = "signup")
+        withStyle(
+            style = SpanStyle(
+                color = Color(0xFFF2E423),
+                textDecoration = TextDecoration.Underline
+            )
+        ) {
+            append("Sign Up")
+        }
+        pop()
+    }
+
+    ClickableText(
+        text = annotatedText,
+        style = TextStyle(
+            color = Color.White,
+            fontSize = 14.sp,
+            fontFamily = InterFont,
+            textAlign = TextAlign.Center
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        onClick = { offset ->
+            annotatedText.getStringAnnotations("SIGNUP", offset, offset).firstOrNull()?.let {
+                onClick()
+            }
+        }
+    )
+}
 
