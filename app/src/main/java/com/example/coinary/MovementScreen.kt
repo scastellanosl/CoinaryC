@@ -3,6 +3,7 @@ package com.example.coinary
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,8 +56,17 @@ fun AddMovementScreen(
     navController: NavController,
     onBackClick: () -> Unit = {},
     onLogout: () -> Unit = {}
-)
-{
+) {
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = Color.Black
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = statusBarColor,
+            darkIcons = false
+        )
+    }
+
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -93,7 +105,8 @@ fun AddMovementScreen(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.TopCenter).padding(top = 40.dp)
+                .align(Alignment.TopCenter)
+                .padding(top = 40.dp)
         )
 
         Column(
@@ -118,7 +131,7 @@ fun AddMovementScreen(
                     )
                 }
 
-                IconButton(onClick = { /* Handle notifications */ }) {
+                IconButton(onClick = { navController.navigate("notifications") }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
@@ -150,14 +163,18 @@ fun AddMovementScreen(
                     text = "Income",
                     isSelected = selectedMovementType == "Income",
                     onClick = { selectedMovementType = "Income" },
-                    modifier = Modifier.width(130.dp).height(buttonHeight)
+                    modifier = Modifier
+                        .width(130.dp)
+                        .height(buttonHeight)
                 )
 
                 MovementTypeButton(
                     text = "Expense",
                     isSelected = selectedMovementType == "Expense",
                     onClick = { selectedMovementType = "Expense" },
-                    modifier = Modifier.width(130.dp).height(buttonHeight)
+                    modifier = Modifier
+                        .width(130.dp)
+                        .height(buttonHeight)
                 )
             }
 
@@ -347,7 +364,6 @@ fun AddMovementScreen(
 
     }
 }
-
 
 
 @Composable
