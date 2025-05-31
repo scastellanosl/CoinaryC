@@ -20,7 +20,7 @@ fun StatsScreen(navController: NavHostController){
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Reminder Screen",
+            text = "Stats Screen",
             color = Color.White,
             fontSize = 24.sp
         )
