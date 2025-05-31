@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.coinary.ProfileScreen
 import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -70,14 +71,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-    val systemUiController = rememberSystemUiController()
-    val statusBarColor = Color(0xFF150F33)
-    SideEffect {
-        systemUiController.setStatusBarColor(
-            color = statusBarColor,
-            darkIcons = false
-        )
-    }
 
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -156,11 +149,43 @@ fun AppNavigation() {
             )
         }
 
+        composable("profile") {
+            ProfileScreen(
+                navController = navController,
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable("notifications") {
+            NotificationsScreen(
+                navController = navController,
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }
 
 @Composable
 fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = Color(0xFF150F33)
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = statusBarColor,
+            darkIcons = false
+        )
+    }
+
     val context = LocalContext.current
     val googleAuthClient = remember { GoogleAuthClient(context) }
     val coroutineScope = rememberCoroutineScope()

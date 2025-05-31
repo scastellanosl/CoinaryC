@@ -33,5 +33,16 @@ fun NavigationGraph(navController: NavHostController) {
         composable("reminder") {
             ReminderScreen(navController = navController)
         }
+        composable("notifications"){
+            NotificationsScreen(navController = navController)
+        }
+        composable("profile"){
+            ProfileScreen(navController = navController, onLogout = {
+                // lógica de logout: puede ser navegar hacia login, cerrar sesión, etc.
+                navController.navigate("login") {
+                    popUpTo("main") { inclusive = true }
+                }
+            })
+        }
     }
 }
