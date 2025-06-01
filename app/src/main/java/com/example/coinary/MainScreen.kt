@@ -5,18 +5,32 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun MainScreen(rootNavController: NavHostController) {
     val mainNavController = rememberNavController()
 
+    //observar el backstack para obtener la ruta actual
+    val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    //qué pantallas mostrar la barra inferior
+    val showBottomBar = currentRoute in listOf(
+        "home", "stats", "movement", "reminder", "notifications", "profile"
+    )
+
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController = mainNavController) },
+        bottomBar = {
+            if (showBottomBar) {
+                BottomNavigationBar(navController = mainNavController)
+            }
+        },
         containerColor = Color.Black
     ) { innerPadding ->
         Box(
