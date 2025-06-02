@@ -33,7 +33,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -52,14 +54,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.coinary.ProfileScreen
 import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Theme_Coinary)
         super.onCreate(savedInstanceState)
         setContent {
             CoinaryTheme {
@@ -71,7 +72,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val navController = rememberNavController()
@@ -98,79 +98,100 @@ fun AppNavigation() {
             }
         }
     }
-    NavHost(navController = navController, startDestination = "main") {
-        composable("login") {
-            GoogleLoginScreen(
-                onLoginSuccess = {
-                    navController.navigate("main") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onNavigateToRegister = {
-                    navController.navigate("register")
-                }
-            )
-        }
-        composable("register") {
-            RegisterScreen(
-                onRegisterSuccess = {
-                    navController.navigate("main") {
-                        popUpTo("register") { inclusive = true }
-                    }
-                },
-                onLoginClick = {
-                    navController.popBackStack()
-                },
-                googleAuthClient = googleAuthClient,
-                launcher = launcher
-            )
-        }
-        composable("main") {
-            MainScreen(rootNavController = navController)
-        }
-        composable("home") {
-            HomeScreen(
-                navController = navController,
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
-                    }
-                }
-            )
-        }
-        composable("movement") {
-            AddMovementScreen(
-                navController = navController,
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
-                    }
-                }
-            )
-        }
 
-        composable("profile") {
-            ProfileScreen(
-                navController = navController,
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
-                    }
-                }
-            )
-        }
+    // Verificar si el usuario está logeado (FirebaseAuth)
+    val isUserLoggedIn = remember { mutableStateOf<Boolean?>(null) }
 
-        composable("notifications") {
-            NotificationsScreen(
-                navController = navController,
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
-                    }
-                }
-            )
-        }
+    LaunchedEffect(Unit) {
+        isUserLoggedIn.value = FirebaseAuth.getInstance().currentUser != null
+    }
 
+    // ✅ Mientras se verifica el estado de autenticación, no renderizamos nada
+    isUserLoggedIn.value?.let { isLoggedIn ->
+        val startDestination = if (isLoggedIn) "main" else "login"
+
+        NavHost(navController = navController, startDestination = startDestination) {
+
+            composable("login") {
+                GoogleLoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate("main") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onNavigateToRegister = {
+                        navController.navigate("register")
+                    }
+                )
+            }
+
+            composable("register") {
+                RegisterScreen(
+                    onRegisterSuccess = {
+                        navController.navigate("main") {
+                            popUpTo("register") { inclusive = true }
+                        }
+                    },
+                    onLoginClick = {
+                        navController.popBackStack()
+                    },
+                    googleAuthClient = googleAuthClient,
+                    launcher = launcher
+                )
+            }
+
+            composable("main") {
+                MainScreen(rootNavController = navController)
+            }
+
+            composable("home") {
+                HomeScreen(
+                    navController = navController,
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate("login") {
+                            popUpTo("main") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable("movement") {
+                AddMovementScreen(
+                    navController = navController,
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate("login") {
+                            popUpTo("main") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable("profile") {
+                ProfileScreen(
+                    navController = navController,
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate("login") {
+                            popUpTo("main") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable("notifications") {
+                NotificationsScreen(
+                    navController = navController,
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate("login") {
+                            popUpTo("main") { inclusive = true }
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
