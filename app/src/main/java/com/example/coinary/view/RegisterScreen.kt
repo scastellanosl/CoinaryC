@@ -1,4 +1,4 @@
-package com.example.coinary
+package com.example.coinary.view
 
 import android.content.Intent
 import android.widget.Toast
@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.coinary.R
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable

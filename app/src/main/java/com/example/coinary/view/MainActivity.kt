@@ -1,4 +1,4 @@
-package com.example.coinary
+package com.example.coinary.view
 
 import android.os.Bundle
 import android.widget.Toast
@@ -54,6 +54,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.coinary.MainScreen
+import com.example.coinary.R
 import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.auth.FirebaseAuth

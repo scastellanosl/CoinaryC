@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.coinary.view.BottomNavigationBar
+import com.example.coinary.view.NavigationGraph
 
 @Composable
 fun MainScreen(rootNavController: NavHostController) {
