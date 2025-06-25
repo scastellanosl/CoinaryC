@@ -24,7 +24,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState // Importar rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll // Importar verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -59,6 +61,8 @@ import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+
+// ... (resto de tu MainActivity y AppNavigation, sin cambios aquí) ...
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -192,9 +196,18 @@ fun AppNavigation() {
                     }
                 )
             }
+
+            // Asegúrate de que tus rutas para listas de ingresos/gastos estén aquí
+            composable(Routes.FreelanceIncomeListScreen.route) {
+                FreelanceIncomeListScreen(navController = navController)
+            }
+            composable(Routes.ExpenseListScreen.route) { // <-- ¡IMPORTANTE! Asegúrate de que esta ruta esté definida
+                ExpenseListScreen(navController = navController)
+            }
         }
     }
 }
+
 
 @Composable
 fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
@@ -213,11 +226,14 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val user = googleAuthClient.getSignedInUser()
 
+    // Paso 1: Crea un rememberScrollState
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .verticalScroll(scrollState) // <-- Paso 2: Aplica verticalScroll aquí
     ) {
 
         Box(
@@ -493,9 +509,9 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp),  // menos padding para no reducir mucho espacio
+                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)  // separa entre cajas
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     listOf(
                         Triple("Food", R.drawable.rectangle1, R.drawable.food_icon) to "$ 102.500",
@@ -506,7 +522,7 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .aspectRatio(0.85f) // para que no sean cuadrados perfectos pero sí proporcionados
+                                .aspectRatio(0.85f)
                                 .padding(vertical = 4.dp),
                             contentAlignment = Alignment.TopCenter
                         ) {
@@ -514,7 +530,7 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                                 painter = painterResource(id = bgRes),
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                alpha = 0.9f // para no tapar el texto completamente
+                                alpha = 0.9f
                             )
 
                             Column(
@@ -551,32 +567,97 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
             }
         }
 
-        // --- INICIO DEL NUEVO BLOQUE ---
-        Column(
+        // --- INICIO DEL NUEVO BLOQUE DE BOTONES DE LISTA ---
+        Spacer(modifier = Modifier.height(20.dp)) // Espacio antes de los botones
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp), // Añade un padding vertical para separarlo
-            horizontalAlignment = Alignment.CenterHorizontally // Centra el botón
+                .padding(horizontal = 16.dp), // Padding horizontal para que no toquen los bordes
+            horizontalArrangement = Arrangement.SpaceAround, // Espacia los botones uniformemente
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
                 onClick = { navController.navigate(Routes.FreelanceIncomeListScreen.route) },
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Puedes ajustar el ancho para que se vea bien
+                    .weight(1f) // Cada botón toma la mitad del espacio
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF212121), // Un color distintivo, puedes ajustar
+                    containerColor = Color(0xFF150F33), // Un color distintivo, ej. verde
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Ver Ingresos Freelance",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    text = "Ver Ingresos",
+                    fontSize = 16.sp, // Ajustado para que quepa bien
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center // Centra el texto si hay espacio limitado
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp)) // Espacio entre los dos botones
+
+            Button(
+                onClick = { navController.navigate(Routes.ExpenseListScreen.route) },
+                modifier = Modifier
+                    .weight(1f) // Cada botón toma la mitad del espacio
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF150F33), // Un color distintivo, ej. rojo
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Ver Gastos",
+                    fontSize = 16.sp, // Ajustado para que quepa bien
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center // Centra el texto si hay espacio limitado
                 )
             }
         }
-        // --- FIN DEL NUEVO BLOQUE ---
+
+        // Botón de Generar Reporte PDF
+        Button(
+            onClick = { navController.navigate(Routes.ReportScreen.route) },
+            modifier = Modifier
+                .fillMaxWidth(0.8f) // Ajusta el ancho como quieras
+                .height(56.dp)
+                .align(Alignment.CenterHorizontally) // Centra este botón
+                .padding(top = 16.dp), // Añade padding superior para separarlo de los otros botones
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6f42c1)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Generar Reporte PDF",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp)) // Espacio antes del botón de cerrar sesión
+
+        // Botón de cerrar sesión
+        Button(
+            onClick = onLogout,
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(56.dp)
+                .align(Alignment.CenterHorizontally), // Centra este botón
+            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Cerrar Sesión",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White
+            )
+        }
+
+        // Espacio al final para asegurar que el último botón no quede pegado al borde
+        Spacer(modifier = Modifier.height(32.dp))
 
     } // Fin del Column principal del HomeScreen
 }

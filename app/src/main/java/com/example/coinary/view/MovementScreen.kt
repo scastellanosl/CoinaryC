@@ -40,19 +40,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext // <-- IMPORTACIÓN NUEVA
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel // <-- IMPORTACIÓN NUEVA
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.coinary.R
-import com.example.coinary.data.database.AppDatabase // <-- IMPORTACIÓN NUEVA
-import com.example.coinary.data.repository.FreelanceIncomeRepositoryImpl // <-- IMPORTACIÓN NUEVA
-import com.example.coinary.viewmodel.AddMovementViewModel // <-- IMPORTACIÓN NUEVA
+import com.example.coinary.data.database.AppDatabase
+import com.example.coinary.data.repository.ExpenseRepositoryImpl
+import com.example.coinary.data.repository.FreelanceIncomeRepositoryImpl
+import com.example.coinary.viewmodel.AddMovementViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,16 +82,27 @@ fun AddMovementScreen(
     val buttonHeight = if (screenHeight < 600.dp) 32.dp else 36.dp
     val buttonHorizontalPadding = if (screenWidth < 360.dp) 12.dp else 20.dp
 
-    var selectedMovementType by remember { mutableStateOf("Income") }
+    var selectedMovementType by remember { mutableStateOf("Income") } // Estado para el tipo de movimiento
     var bottomButtonSelected by remember { mutableStateOf<String?>(null) }
 
-    var selectedCategory by remember { mutableStateOf("Development") } // <-- CAMBIO: Categoría inicial
-    var expanded by remember { mutableStateOf(false) }
-    // <-- CAMBIO: LISTA DE CATEGORÍAS ESPECÍFICAS PARA INGRESOS FREELANCE
-    val categories = listOf(
+    // --- Inicio: Lógica de Categorías Dinámicas ---
+    val freelanceCategories = listOf(
         "Development", "Design", "Writing", "Consulting",
         "Marketing", "Teaching", "Photography", "Other"
     )
+    val expenseCategories = listOf(
+        "Food", "Transport", "Entertainment", "Health", "Utilities", "Rent", "Shopping", "Other"
+    )
+
+    // Estado para la categoría seleccionada y la lista de categorías actual
+    // Se inicializa con la primera categoría de ingresos
+    var selectedCategory by remember { mutableStateOf(freelanceCategories.first()) }
+    val currentCategories = remember(selectedMovementType) {
+        if (selectedMovementType == "Income") freelanceCategories else expenseCategories
+    }
+    // --- Fin: Lógica de Categorías Dinámicas ---
+
+    var expanded by remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
@@ -103,18 +115,26 @@ fun AddMovementScreen(
             shape = RoundedCornerShape(12.dp)
         )
 
-    // <-- NUEVO CÓDIGO: Obtener el contexto y configurar el ViewModel
-    val context = LocalContext.current.applicationContext
+    val context = LocalContext.current.applicationContext // <-- Obtener el contexto de la aplicación
+
+    // --- Inicio: Inicialización del ViewModel con inyección de repositorios ---
     val addMovementViewModel: AddMovementViewModel = viewModel(
         factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                val freelanceIncomeDao = AppDatabase.getDatabase(context).freelanceIncomeDao()
-                val repository = FreelanceIncomeRepositoryImpl(freelanceIncomeDao)
-                return AddMovementViewModel(repository) as T
+                val database = AppDatabase.getDatabase(context) // Obtener la instancia de la base de datos
+                val freelanceIncomeDao = database.freelanceIncomeDao()
+                val freelanceIncomeRepository = FreelanceIncomeRepositoryImpl(freelanceIncomeDao)
+
+                val expenseDao = database.expenseDao() // Obtener el DAO de gastos
+                val expenseRepository = ExpenseRepositoryImpl(expenseDao) // Crear el repositorio de gastos
+
+                // Pasar ambos repositorios al constructor del ViewModel
+                @Suppress("UNCHECKED_CAST")
+                return AddMovementViewModel(freelanceIncomeRepository, expenseRepository) as T
             }
         }
     )
-    // <-- FIN DEL NUEVO CÓDIGO
+    // --- Fin: Inicialización del ViewModel ---
 
     Box(
         modifier = Modifier
@@ -166,7 +186,7 @@ fun AddMovementScreen(
 
             Text(
                 text = "Add a movement",
-                // fontFamily = InterFont, // <-- NOTA: Comentado si InterFont no está definido globalmente
+                // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                 fontSize = titleFontSize,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -184,7 +204,10 @@ fun AddMovementScreen(
                 MovementTypeButton(
                     text = "Income",
                     isSelected = selectedMovementType == "Income",
-                    onClick = { selectedMovementType = "Income" },
+                    onClick = {
+                        selectedMovementType = "Income"
+                        selectedCategory = freelanceCategories.first() // Reinicia la categoría al cambiar
+                    },
                     modifier = Modifier
                         .width(130.dp)
                         .height(buttonHeight)
@@ -193,7 +216,10 @@ fun AddMovementScreen(
                 MovementTypeButton(
                     text = "Expense",
                     isSelected = selectedMovementType == "Expense",
-                    onClick = { selectedMovementType = "Expense" },
+                    onClick = {
+                        selectedMovementType = "Expense"
+                        selectedCategory = expenseCategories.first() // Reinicia la categoría al cambiar
+                    },
                     modifier = Modifier
                         .width(130.dp)
                         .height(buttonHeight)
@@ -222,7 +248,7 @@ fun AddMovementScreen(
                 ) {
                     Text(
                         text = "Select Category",
-                        // fontFamily = InterFont, // <-- NOTA: Comentado
+                        // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,
                         fontSize = (labelFontSize.value + 4).sp,
@@ -240,7 +266,7 @@ fun AddMovementScreen(
                         Text(
                             text = selectedCategory,
                             color = Color.White,
-                            // fontFamily = InterFont, // <-- NOTA: Comentado
+                            // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                             fontWeight = FontWeight.Normal,
                             fontSize = labelFontSize,
                             modifier = Modifier
@@ -253,11 +279,11 @@ fun AddMovementScreen(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            categories.forEach { category ->
+                            currentCategories.forEach { category -> // <-- Usa la lista de categorías actual
                                 androidx.compose.material3.DropdownMenuItem(
                                     text = {
                                         Text(
-                                            // fontFamily = InterFont, // <-- NOTA: Comentado
+                                            // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                                             fontWeight = FontWeight.Normal,
                                             fontSize = labelFontSize,
                                             text = category,
@@ -277,16 +303,18 @@ fun AddMovementScreen(
 
                     TextField(
                         value = amount,
-                        onValueChange = { newValue -> // <-- CAMBIO: Validación de entrada
-                            // Permitir solo números y un punto decimal
-                            if (newValue.all { it.isDigit() || it == '.' }) {
+                        onValueChange = { newValue ->
+                            // --- Inicio: Validación de monto ---
+                            // Permite solo dígitos y un único punto decimal
+                            if (newValue.all { it.isDigit() || it == '.' } && newValue.count { it == '.' } <= 1) {
                                 amount = newValue
                             }
+                            // --- Fin: Validación de monto ---
                         },
                         label = {
                             Text(
                                 text = "Assign an amount",
-                                // fontFamily = InterFont, // <-- NOTA: Comentado
+                                // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                                 fontWeight = FontWeight.Normal,
                                 fontSize = labelFontSize,
                                 color = Color(0xFF868686)
@@ -295,7 +323,7 @@ fun AddMovementScreen(
                         singleLine = true,
                         modifier = commonFieldModifier,
                         textStyle = TextStyle(
-                            // fontFamily = InterFont, // <-- NOTA: Comentado
+                            // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                             color = Color.White,
                             fontSize = labelFontSize
                         ),
@@ -321,7 +349,7 @@ fun AddMovementScreen(
                     Text(
                         text = "Add a short description if you want to",
                         color = Color.White,
-                        // fontFamily = InterFont, // <-- NOTA: Comentado
+                        // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                         fontSize = (labelFontSize.value - 2).sp,
                         fontWeight = FontWeight.Thin,
                         textAlign = TextAlign.Center,
@@ -336,7 +364,7 @@ fun AddMovementScreen(
                         label = {
                             Text(
                                 text = "Add a description",
-                                // fontFamily = InterFont, // <-- NOTA: Comentado
+                                // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                                 fontWeight = FontWeight.Normal,
                                 fontSize = labelFontSize,
                                 color = Color(0xFF868686)
@@ -345,7 +373,7 @@ fun AddMovementScreen(
                         singleLine = true,
                         modifier = commonFieldModifier.padding(vertical = 30.dp),
                         textStyle = TextStyle(
-                            // fontFamily = InterFont, // <-- NOTA: Comentado
+                            // fontFamily = InterFont, // <-- Comentado/removido si no está definido
                             color = Color.White,
                             fontSize = labelFontSize
                         ),
@@ -371,47 +399,57 @@ fun AddMovementScreen(
                         MovementTypeButton(
                             text = "Save",
                             isSelected = bottomButtonSelected == "Save",
-                            onClick = { // <-- CAMBIO: Lógica del botón Save
+                            onClick = {
                                 bottomButtonSelected = "Save"
                                 val amountDouble = amount.toDoubleOrNull()
-                                // Solo guardamos si el tipo de movimiento es "Income" y el monto es válido
-                                if (selectedMovementType == "Income" && amountDouble != null && amountDouble > 0) {
-                                    addMovementViewModel.saveFreelanceIncome(
-                                        amount = amountDouble,
-                                        category = selectedCategory,
-                                        description = description
-                                    )
-                                    // Limpiar campos y navegar
+                                if (amountDouble != null && amountDouble > 0) {
+                                    if (selectedMovementType == "Income") {
+                                        addMovementViewModel.saveFreelanceIncome(
+                                            amount = amountDouble,
+                                            category = selectedCategory,
+                                            description = description
+                                        )
+                                        // Navega a la lista de ingresos después de guardar un ingreso
+                                        navController.navigate(Routes.FreelanceIncomeListScreen.route) {
+                                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                            launchSingleTop = true
+                                        }
+                                    } else { // Si selectedMovementType es "Expense"
+                                        addMovementViewModel.saveExpense(
+                                            amount = amountDouble,
+                                            category = selectedCategory,
+                                            description = description
+                                        )
+                                        // Navega a la nueva pantalla de lista de gastos después de guardar un gasto
+                                        navController.navigate(Routes.ExpenseListScreen.route) {
+                                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                    // Limpiar campos después de guardar exitosamente
                                     amount = ""
                                     description = ""
-                                    selectedCategory = categories.first() // Resetear a la primera categoría
-                                    navController.navigate(Routes.FreelanceIncomeListScreen.route) {
-                                        // Opcional: limpiar el stack de navegación para que no se pueda volver
-                                        // directamente a AddMovementScreen desde FreelanceIncomeListScreen con el botón Atrás del sistema
-                                        popUpTo(navController.graph.startDestinationId) { inclusive = false }
-                                        launchSingleTop = true
-                                    }
+                                    selectedCategory = currentCategories.first() // Reiniciar la categoría a la primera de la lista actual
                                 } else {
-                                    // Aquí puedes añadir lógica para mostrar un mensaje de error al usuario,
-                                    // por ejemplo, un Toast o Snackbar, si el monto no es válido o no es un ingreso.
-                                    println("Error: El monto no es válido o el tipo de movimiento no es 'Income'.")
+                                    println("Error: El monto no es válido o es cero.")
+                                    // Considera mostrar un Toast o un Snackbar al usuario aquí para feedback
                                 }
                             },
                             modifier = Modifier.height(36.dp)
                         )
 
-                        Spacer(modifier = Modifier.width(12.dp)) // Espacio entre botones
+                        Spacer(modifier = Modifier.width(12.dp))
 
                         MovementTypeButton(
                             text = "Cancel",
                             isSelected = bottomButtonSelected == "Cancel",
-                            onClick = { // <-- CAMBIO: Lógica del botón Cancel
+                            onClick = {
                                 bottomButtonSelected = "Cancel"
-                                // Limpiar campos y navegar hacia atrás
                                 amount = ""
                                 description = ""
-                                selectedCategory = categories.first() // Resetear a la primera categoría
-                                navController.popBackStack() // Navega de vuelta a la pantalla anterior
+                                selectedMovementType = "Income" // Resetear a Income por defecto
+                                selectedCategory = freelanceCategories.first() // Reiniciar categoría a la primera de ingresos
+                                navController.popBackStack() // Regresa a la pantalla anterior
                             },
                             modifier = Modifier.height(36.dp)
                         )
@@ -421,6 +459,7 @@ fun AddMovementScreen(
         }
     }
 }
+
 
 @Composable
 fun MovementTypeButton(

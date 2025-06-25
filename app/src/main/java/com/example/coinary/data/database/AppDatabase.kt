@@ -5,31 +5,30 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.coinary.data.model.FreelanceIncome
+import com.example.coinary.data.model.Expense
 
-// Define la base de datos de Room
 @Database(
-    entities = [FreelanceIncome::class], // Lista de entidades (tablas) en esta base de datos
-    version = 1, // Versión de la base de datos. Incrementa si cambias el esquema.
-    exportSchema = false // Por ahora, no exportamos el esquema JSON
+    entities = [FreelanceIncome::class, Expense::class],
+    version = 3, // Asegúrate de que aquí sea 2, como lo cambiaste antes
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    // Define los DAOs asociados a esta base de datos
     abstract fun freelanceIncomeDao(): FreelanceIncomeDao
+    abstract fun expenseDao(): ExpenseDao
 
     companion object {
-        @Volatile // Los cambios a esta instancia son inmediatamente visibles para todos los hilos
+        @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Método para obtener la instancia única de la base de datos (Singleton)
         fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) { // Bloquea este hilo para asegurar una única instancia
+            return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context.applicationContext, // Usa el ApplicationContext para evitar fugas de memoria
+                    context.applicationContext,
                     AppDatabase::class.java,
-                    "coinary_database" // Nombre del archivo de la base de datos
+                    "coinary_database"
                 )
-                    // .fallbackToDestructiveMigration() // Opcional: Destruye y recrea la base de datos si la versión cambia (solo para desarrollo)
+                    .fallbackToDestructiveMigration() // <-- ¡AÑADE ESTA LÍNEA!
                     .build()
                 INSTANCE = instance
                 instance

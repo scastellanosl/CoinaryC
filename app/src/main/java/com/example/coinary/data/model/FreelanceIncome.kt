@@ -2,14 +2,14 @@ package com.example.coinary.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.UUID
 
-@Entity(tableName = "freelance_incomes") // Declara esta clase como una entidad de Room
+@Entity(tableName = "freelance_income_table") // Nombre de la tabla
 data class FreelanceIncome(
-    @PrimaryKey // Define 'id' como la clave primaria de la tabla
-    val id: String = UUID.randomUUID().toString(), // Genera un ID único automáticamente
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val amount: Double,
-    val category: String,
     val description: String,
-    val date: Long = System.currentTimeMillis()
+    val date: Long, // Importante para las consultas por fecha
+    val category: String? = null // Si tienes una categoría
+    // ... otros campos
 )

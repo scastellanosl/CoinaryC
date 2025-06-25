@@ -5,6 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 
+// package com.example.coinary.view (asegúrate de que el paquete sea correcto)
+
+// ... otras importaciones
+
 @Composable
 fun NavigationGraph(navController: NavHostController) {
     NavHost(
@@ -62,14 +66,20 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Routes.RealtimeTransactionsScreen.route) {
             RealtimeTransactionsScreen(navController = navController)
         }
-        // NUEVA RUTA: Para la lista de ingresos freelance
-        composable(Routes.FreelanceIncomeListScreen.route) { // <-- AÑADE ESTA LÍNEA
+        composable(Routes.FreelanceIncomeListScreen.route) {
             FreelanceIncomeListScreen(navController = navController)
+        }
+        composable(Routes.ExpenseListScreen.route) {
+            ExpenseListScreen(navController = navController)
+        }
+        composable(Routes.ReportScreen.route) { // <-- ¡NUEVA RUTA!
+            ReportScreen(navController = navController)
         }
     }
 }
 
-// Clase sellada Routes para definir todas tus rutas de navegación de forma segura
+// ... (resto de tu clase Routes) ...
+
 sealed class Routes(val route: String) {
     object LoginScreen : Routes("login")
     object HomeScreen : Routes("home")
@@ -79,5 +89,7 @@ sealed class Routes(val route: String) {
     object NotificationsScreen : Routes("notifications")
     object ProfileScreen : Routes("profile")
     object RealtimeTransactionsScreen : Routes("realtime_transactions")
-    object FreelanceIncomeListScreen : Routes("freelance_income_list") // <-- ¡AÑADE ESTA NUEVA RUTA!
+    object FreelanceIncomeListScreen : Routes("freelance_income_list")
+    object ExpenseListScreen : Routes("expense_list")
+    object ReportScreen : Routes("report_screen") // <-- ¡NUEVA RUTA!
 }

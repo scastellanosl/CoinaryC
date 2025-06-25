@@ -1,4 +1,4 @@
-package com.example.coinary.data.database
+package com.example.coinary.data.database // Make sure this package is correct for your DAO
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -7,12 +7,13 @@ import androidx.room.Query
 import com.example.coinary.data.model.FreelanceIncome
 import kotlinx.coroutines.flow.Flow
 
-@Dao // Declara esta interfaz como un DAO de Room
+@Dao
 interface FreelanceIncomeDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // Método para insertar o reemplazar un ingreso
-    suspend fun insertIncome(income: FreelanceIncome)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFreelanceIncome(income: FreelanceIncome)
 
-    @Query("SELECT * FROM freelance_incomes ORDER BY date DESC") // Consulta para obtener todos los ingresos, ordenados por fecha descendente
-    fun getAllIncomes(): Flow<List<FreelanceIncome>> // Devuelve un Flow para recibir actualizaciones en tiempo real
+    // The query should use "freelance_income_table" as specified in your entity
+    @Query("SELECT * FROM freelance_income_table ORDER BY date DESC") // <-- Use the exact table name
+    fun getAllFreelanceIncome(): Flow<List<FreelanceIncome>>
 }
