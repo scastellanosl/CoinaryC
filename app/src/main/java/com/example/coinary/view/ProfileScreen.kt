@@ -1,7 +1,8 @@
 package com.example.coinary.view
 
+// Importar AggregatorResult y TransactionUpdate desde el paquete data.model
 import android.app.TimePickerDialog
-import android.content.Context // Importar Context
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -37,14 +38,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,17 +57,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.coinary.R
-import com.example.coinary.view.GoogleAuthClient
-import com.example.coinary.viewmodel.ProfileViewModel
 import com.example.coinary.data.repository.BankRepositoryImpl
+import com.example.coinary.viewmodel.ProfileViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import androidx.lifecycle.viewmodel.compose.viewModel
-
-// Importar AggregatorResult y TransactionUpdate desde el paquete data.model
-import com.example.coinary.data.model.AggregatorResult
-import com.example.coinary.data.model.TransactionUpdate
 
 // -------------------------------------------------------------------------
 // NEW: Mueve esta función fuera del Composable ProfileScreen
@@ -618,7 +611,28 @@ fun ProfileScreen(
                                     fontSize = (screenWidthDp * 0.04f).sp
                                 )
                             }
+
+                            // NEW: Botón para ver transacciones en tiempo real
                             Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { navController.navigate(Routes.RealtimeTransactionsScreen.route) }, // Navega a la nueva pantalla
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = screenWidth * 0.048f)
+                                    .height(50.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF2196F3), // Un color diferente para distinguirlo
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text(
+                                    text = "Ver Transacciones en Tiempo Real (Conceptual)",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = (screenWidthDp * 0.04f).sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp)) // Espacio al final
                         }
                     }
                 }

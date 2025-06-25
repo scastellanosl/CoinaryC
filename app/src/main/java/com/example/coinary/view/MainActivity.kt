@@ -54,7 +54,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.coinary.MainScreen
 import com.example.coinary.R
 import com.example.coinary.ui.theme.CoinaryTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -551,5 +550,33 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
                 }
             }
         }
-    }
+
+        // --- INICIO DEL NUEVO BLOQUE ---
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp), // Añade un padding vertical para separarlo
+            horizontalAlignment = Alignment.CenterHorizontally // Centra el botón
+        ) {
+            Button(
+                onClick = { navController.navigate(Routes.FreelanceIncomeListScreen.route) },
+                modifier = Modifier
+                    .fillMaxWidth(0.7f) // Puedes ajustar el ancho para que se vea bien
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF212121), // Un color distintivo, puedes ajustar
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Ver Ingresos Freelance",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        // --- FIN DEL NUEVO BLOQUE ---
+
+    } // Fin del Column principal del HomeScreen
 }

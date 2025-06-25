@@ -1,6 +1,5 @@
 package com.example.coinary.view
 
-
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,25 +9,24 @@ import androidx.navigation.compose.composable
 fun NavigationGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = "home" // La pantalla inicial dentro de MainScreen
+        startDestination = Routes.HomeScreen.route
     ) {
-        composable("home") {
+        composable(Routes.HomeScreen.route) {
             HomeScreen(
                 navController = navController,
                 onLogout = {
-                    // lógica de logout: puede ser navegar hacia login, cerrar sesión, etc.
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
+                    navController.navigate(Routes.LoginScreen.route) {
+                        popUpTo(Routes.HomeScreen.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable("login") {
+        composable(Routes.LoginScreen.route) {
             GoogleLoginScreen(
                 onLoginSuccess = {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
+                    navController.navigate(Routes.HomeScreen.route) {
+                        popUpTo(Routes.LoginScreen.route) { inclusive = true }
                         launchSingleTop = true
                     }
                 },
@@ -38,28 +36,48 @@ fun NavigationGraph(navController: NavHostController) {
             )
         }
 
-        composable("stats") {
-                StatsScreen(navController = navController)
+        composable(Routes.StatsScreen.route) {
+            StatsScreen(navController = navController)
         }
-        composable("movement") {
+        composable(Routes.MovementScreen.route) {
             AddMovementScreen(navController = navController)
         }
-        composable("reminder") {
+        composable(Routes.ReminderScreen.route) {
             ReminderScreen(navController = navController)
         }
-        composable("notifications"){
+        composable(Routes.NotificationsScreen.route){
             NotificationsScreen(navController = navController)
         }
-        composable("profile") {
+        composable(Routes.ProfileScreen.route) {
             ProfileScreen(
                 navController = navController,
                 onLogout = { // Cierre de sesión
-                    navController.navigate("login") { 
+                    navController.navigate(Routes.LoginScreen.route) {
                         popUpTo(0) { inclusive = true }
                         launchSingleTop = true
                     }
                 }
             )
         }
+        composable(Routes.RealtimeTransactionsScreen.route) {
+            RealtimeTransactionsScreen(navController = navController)
+        }
+        // NUEVA RUTA: Para la lista de ingresos freelance
+        composable(Routes.FreelanceIncomeListScreen.route) { // <-- AÑADE ESTA LÍNEA
+            FreelanceIncomeListScreen(navController = navController)
+        }
     }
+}
+
+// Clase sellada Routes para definir todas tus rutas de navegación de forma segura
+sealed class Routes(val route: String) {
+    object LoginScreen : Routes("login")
+    object HomeScreen : Routes("home")
+    object StatsScreen : Routes("stats")
+    object MovementScreen : Routes("movement")
+    object ReminderScreen : Routes("reminder")
+    object NotificationsScreen : Routes("notifications")
+    object ProfileScreen : Routes("profile")
+    object RealtimeTransactionsScreen : Routes("realtime_transactions")
+    object FreelanceIncomeListScreen : Routes("freelance_income_list") // <-- ¡AÑADE ESTA NUEVA RUTA!
 }

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("kotlin-kapt") // <-- AÑADE ESTA LÍNEA PARA EL PROCESADOR DE ANOTACIONES DE ROOM
 }
 
 android {
@@ -41,6 +42,7 @@ android {
 }
 
 dependencies {
+    // Dependencias existentes
     implementation(libs.accompanist.systemuicontroller)
     implementation(platform(libs.firebase.bom.v33130))
     implementation(libs.google.firebase.analytics)
@@ -58,6 +60,20 @@ dependencies {
     implementation(libs.vision.internal.vkp)
     implementation(libs.androidx.navigation.compose.android)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.benchmark.macro)
+    implementation(libs.androidx.material.icons.extended) // Asegúrate de que esta línea exista, aunque ya estaba en tu código
+
+    // Dependencias de Room Database <-- AÑADE ESTE BLOQUE
+    val room_version = "2.6.1" // Puedes actualizar a la última versión estable si lo deseas
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version") // Para soporte de Coroutines con Room
+
+    // Dependencias de Coroutines (asegúrate de tenerlas, aunque otras libs ya las incluyan)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Dependencias de Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -65,6 +81,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.material.icons.extended)
-
 }
