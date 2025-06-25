@@ -81,4 +81,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0") // O la versión más reciente
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0") // Opcional, para ver logs de red
+
 }

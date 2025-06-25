@@ -75,6 +75,9 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Routes.ReportScreen.route) { // <-- ¡NUEVA RUTA!
             ReportScreen(navController = navController)
         }
+        composable(Routes.ChatScreen.route) {
+            ChatScreen(navController = navController)
+        }
     }
 }
 
@@ -91,5 +94,6 @@ sealed class Routes(val route: String) {
     object RealtimeTransactionsScreen : Routes("realtime_transactions")
     object FreelanceIncomeListScreen : Routes("freelance_income_list")
     object ExpenseListScreen : Routes("expense_list")
-    object ReportScreen : Routes("report_screen") // <-- ¡NUEVA RUTA!
+    object ReportScreen : Routes("report_screen")
+    object ChatScreen : Routes("chat_screen") // <-- ¡AÑADE ESTA LÍNEA!
 }

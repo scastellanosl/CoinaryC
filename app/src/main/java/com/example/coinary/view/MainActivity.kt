@@ -201,8 +201,12 @@ fun AppNavigation() {
             composable(Routes.FreelanceIncomeListScreen.route) {
                 FreelanceIncomeListScreen(navController = navController)
             }
-            composable(Routes.ExpenseListScreen.route) { // <-- ¡IMPORTANTE! Asegúrate de que esta ruta esté definida
+            composable(Routes.ExpenseListScreen.route) {
                 ExpenseListScreen(navController = navController)
+            }
+            // ¡ESTA LÍNEA ES CORRECTA Y YA ESTABA AQUÍ!
+            composable(Routes.ChatScreen.route) {
+                ChatScreen(navController = navController)
             }
         }
     }
@@ -636,15 +640,34 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio antes del botón de cerrar sesión
+        // --- INICIO NUEVO BOTÓN DE CHAT! ---
+        Spacer(modifier = Modifier.height(16.dp)) // Espacio entre el botón de reporte y el de chat
+        Button(
+            onClick = { navController.navigate(Routes.ChatScreen.route) }, // <-- Navega a la nueva pantalla
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(56.dp)
+                .align(Alignment.CenterHorizontally),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00bcd4)), // Un color azul/cian para diferenciar
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "Hablar con el Asistente",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White
+            )
+        }
+        // --- FIN NUEVO BOTÓN DE CHAT ---
 
+        Spacer(modifier = Modifier.height(16.dp)) // Espacio antes del botón de cerrar sesión
         // Botón de cerrar sesión
         Button(
             onClick = onLogout,
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .height(56.dp)
-                .align(Alignment.CenterHorizontally), // Centra este botón
+                .align(Alignment.CenterHorizontally),
             colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -656,7 +679,6 @@ fun HomeScreen(navController: NavController, onLogout: () -> Unit) {
             )
         }
 
-        // Espacio al final para asegurar que el último botón no quede pegado al borde
         Spacer(modifier = Modifier.height(32.dp))
 
     } // Fin del Column principal del HomeScreen

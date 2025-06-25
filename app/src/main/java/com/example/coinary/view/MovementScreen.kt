@@ -1,5 +1,6 @@
 package com.example.coinary.view
 
+import android.widget.Toast // <-- ¡IMPORTAR TOAST!
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog // <-- ¡IMPORTAR ALERTDIALOG!
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,10 +28,12 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton // <-- ¡IMPORTAR TEXTBUTTON!
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState // <-- ¡IMPORTAR collectAsState!
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,8 +98,6 @@ fun AddMovementScreen(
         "Food", "Transport", "Entertainment", "Health", "Utilities", "Rent", "Shopping", "Other"
     )
 
-    // Estado para la categoría seleccionada y la lista de categorías actual
-    // Se inicializa con la primera categoría de ingresos
     var selectedCategory by remember { mutableStateOf(freelanceCategories.first()) }
     val currentCategories = remember(selectedMovementType) {
         if (selectedMovementType == "Income") freelanceCategories else expenseCategories
@@ -115,26 +117,30 @@ fun AddMovementScreen(
             shape = RoundedCornerShape(12.dp)
         )
 
-    val context = LocalContext.current.applicationContext // <-- Obtener el contexto de la aplicación
+    val context = LocalContext.current.applicationContext
 
     // --- Inicio: Inicialización del ViewModel con inyección de repositorios ---
     val addMovementViewModel: AddMovementViewModel = viewModel(
         factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                val database = AppDatabase.getDatabase(context) // Obtener la instancia de la base de datos
+                val database = AppDatabase.getDatabase(context)
                 val freelanceIncomeDao = database.freelanceIncomeDao()
                 val freelanceIncomeRepository = FreelanceIncomeRepositoryImpl(freelanceIncomeDao)
 
-                val expenseDao = database.expenseDao() // Obtener el DAO de gastos
-                val expenseRepository = ExpenseRepositoryImpl(expenseDao) // Crear el repositorio de gastos
+                val expenseDao = database.expenseDao()
+                val expenseRepository = ExpenseRepositoryImpl(expenseDao)
 
-                // Pasar ambos repositorios al constructor del ViewModel
                 @Suppress("UNCHECKED_CAST")
                 return AddMovementViewModel(freelanceIncomeRepository, expenseRepository) as T
             }
         }
     )
     // --- Fin: Inicialización del ViewModel ---
+
+    // --- OBSERVANDO LOS ESTADOS DEL VIEWMODEL PARA LA ALERTA ---
+    val showExceedAlert by addMovementViewModel.showExceedIncomeAlert.collectAsState()
+    val totalIncome by addMovementViewModel.totalIncome.collectAsState()
+    // --------------------------------------------------------
 
     Box(
         modifier = Modifier
@@ -279,7 +285,7 @@ fun AddMovementScreen(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            currentCategories.forEach { category -> // <-- Usa la lista de categorías actual
+                            currentCategories.forEach { category ->
                                 androidx.compose.material3.DropdownMenuItem(
                                     text = {
                                         Text(
@@ -304,12 +310,10 @@ fun AddMovementScreen(
                     TextField(
                         value = amount,
                         onValueChange = { newValue ->
-                            // --- Inicio: Validación de monto ---
                             // Permite solo dígitos y un único punto decimal
                             if (newValue.all { it.isDigit() || it == '.' } && newValue.count { it == '.' } <= 1) {
                                 amount = newValue
                             }
-                            // --- Fin: Validación de monto ---
                         },
                         label = {
                             Text(
@@ -407,32 +411,44 @@ fun AddMovementScreen(
                                         addMovementViewModel.saveFreelanceIncome(
                                             amount = amountDouble,
                                             category = selectedCategory,
-                                            description = description
+                                            description = description,
+                                            onIncomeSaved = {
+                                                // Limpiar campos y navegar DESPUÉS de que el ViewModel confirme el guardado
+                                                amount = ""
+                                                description = ""
+                                                selectedCategory = currentCategories.first()
+                                                Toast.makeText(context, "Ingreso guardado!", Toast.LENGTH_SHORT).show()
+                                                navController.navigate(Routes.FreelanceIncomeListScreen.route) {
+                                                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                                    launchSingleTop = true
+                                                }
+                                            }
                                         )
-                                        // Navega a la lista de ingresos después de guardar un ingreso
-                                        navController.navigate(Routes.FreelanceIncomeListScreen.route) {
-                                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
-                                            launchSingleTop = true
-                                        }
                                     } else { // Si selectedMovementType es "Expense"
                                         addMovementViewModel.saveExpense(
                                             amount = amountDouble,
                                             category = selectedCategory,
-                                            description = description
+                                            description = description,
+                                            onExpenseSaved = {
+                                                // Esta callback se ejecutará si el gasto se guarda directamente
+                                                // O después de la confirmación de la alerta
+                                                amount = ""
+                                                description = ""
+                                                selectedCategory = currentCategories.first()
+                                                Toast.makeText(context, "Gasto guardado!", Toast.LENGTH_SHORT).show()
+                                                navController.navigate(Routes.ExpenseListScreen.route) {
+                                                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                                    launchSingleTop = true
+                                                }
+                                            }
                                         )
-                                        // Navega a la nueva pantalla de lista de gastos después de guardar un gasto
-                                        navController.navigate(Routes.ExpenseListScreen.route) {
-                                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
-                                            launchSingleTop = true
-                                        }
+                                        // IMPORTANTE: La navegación y el reseteo de campos para gastos
+                                        // ahora se manejan dentro del callback 'onExpenseSaved'
+                                        // para asegurar que solo ocurra después de que el ViewModel
+                                        // haya decidido guardar (o haya sido confirmado por el usuario).
                                     }
-                                    // Limpiar campos después de guardar exitosamente
-                                    amount = ""
-                                    description = ""
-                                    selectedCategory = currentCategories.first() // Reiniciar la categoría a la primera de la lista actual
                                 } else {
-                                    println("Error: El monto no es válido o es cero.")
-                                    // Considera mostrar un Toast o un Snackbar al usuario aquí para feedback
+                                    Toast.makeText(context, "Por favor, ingresa un monto válido mayor a cero.", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             modifier = Modifier.height(36.dp)
@@ -447,9 +463,9 @@ fun AddMovementScreen(
                                 bottomButtonSelected = "Cancel"
                                 amount = ""
                                 description = ""
-                                selectedMovementType = "Income" // Resetear a Income por defecto
-                                selectedCategory = freelanceCategories.first() // Reiniciar categoría a la primera de ingresos
-                                navController.popBackStack() // Regresa a la pantalla anterior
+                                selectedMovementType = "Income"
+                                selectedCategory = freelanceCategories.first()
+                                navController.popBackStack()
                             },
                             modifier = Modifier.height(36.dp)
                         )
@@ -458,6 +474,48 @@ fun AddMovementScreen(
             }
         }
     }
+
+    // --- DIALOGO DE ALERTA PARA GASTOS EXCESIVOS ---
+    if (showExceedAlert) {
+        AlertDialog(
+            onDismissRequest = {
+                // Si el usuario toca fuera del diálogo o presiona back, descartar alerta
+                addMovementViewModel.dismissExceedIncomeAlert()
+            },
+            title = { Text("¡Advertencia de Gasto Excesivo!") },
+            text = {
+                val amountToDisplay = amount.toDoubleOrNull() ?: 0.0
+                Text(
+                    text = "El gasto de $${String.format("%.2f", amountToDisplay)} que intentas registrar supera tus ingresos actuales de $${String.format("%.2f", totalIncome)}.\n¿Deseas continuar de todas formas?"
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    addMovementViewModel.confirmSaveExpenseDespiteExceeding {
+                        // Limpiar campos y navegar DESPUÉS de que se confirme el guardado
+                        amount = ""
+                        description = ""
+                        selectedCategory = currentCategories.first()
+                        Toast.makeText(context, "Gasto guardado (supera ingresos)!", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Routes.ExpenseListScreen.route) {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                }) {
+                    Text("Sí, continuar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    addMovementViewModel.dismissExceedIncomeAlert()
+                }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+    // ---------------------------------------------
 }
 
 
