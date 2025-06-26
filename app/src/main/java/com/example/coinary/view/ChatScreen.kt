@@ -179,10 +179,7 @@ private suspend fun callGeminiApi(prompt: String, chatHistoryList: List<ChatMess
     val payload = mapOf(
         "contents" to historyForApi
     )
-
-    // !!! IMPORTANTE: REEMPLAZA "TU_CLAVE_API_DE_GEMINI_AQUI" CON TU CLAVE REAL DE GOOGLE GEMINI !!!
-    // NO expongas esta clave en código público o repositorios. Usa métodos más seguros en producción.
-    val apiKey = "AIzaSyDM0oSp47eFkrJnMBuiwgz1ol_4VqhclTY" // <--- ¡COLOCA TU CLAVE AQUÍ!
+    val apiKey = "AIzaSyDM0oSp47eFkrJnMBuiwgz1ol_4VqhclTY"
     val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}"
 
     return try {
