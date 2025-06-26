@@ -1,6 +1,6 @@
 package com.example.coinary.view
 
-import android.widget.Toast // <-- ¡IMPORTAR TOAST!
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState // Importar rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll // Importar verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.AlertDialog // <-- ¡IMPORTAR ALERTDIALOG!
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,12 +30,12 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton // <-- ¡IMPORTAR TEXTBUTTON!
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState // <-- ¡IMPORTAR collectAsState!
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -142,6 +144,9 @@ fun AddMovementScreen(
     val totalIncome by addMovementViewModel.totalIncome.collectAsState()
     // --------------------------------------------------------
 
+    // Agrega el scrollState aquí
+    val scrollState = rememberScrollState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -157,10 +162,12 @@ fun AddMovementScreen(
                 .padding(top = 40.dp)
         )
 
+        // Envuelve la columna principal con el modificador verticalScroll
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState) // <-- ¡AQUÍ ESTÁ EL CAMBIO!
         ) {
             Row(
                 modifier = Modifier
@@ -515,7 +522,7 @@ fun AddMovementScreen(
             }
         )
     }
-    // ---------------------------------------------
+
 }
 
 
